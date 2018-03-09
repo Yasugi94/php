@@ -1,0 +1,322 @@
+1) Intro to P/L SQL
+
+
+DECLARE
+	message varchar2(15) :=  'Hello Yas !';
+BEGIN
+	dbms_output.put_line(message);
+END;
+/
+
+
+2)Working With Records
+
+DECLARE
+	c_customer_id oc_customer.customer_id%TYPE;
+BEGIN
+	SELECT customer_id INTO c_customer_id FROM oc_customer WHERE city = 'KUDUS';
+	dbms_output.put_line(c_customer_id);
+END;
+/
+
+
+3)Using Cursor
+
+
+DECLARE
+	CURSOR c_customer IS Select * from oc_customer;
+BEGIN
+	FOR employee_rec 
+   IN c_customer
+   LOOP
+      DBMS_OUTPUT.put_line (
+         employee_rec.customer_id || employee_rec.firstname || employee_rec.lastname || employee_rec.city);
+   END LOOP;
+END;
+/
+
+
+DECLARE
+	total_rows number(2);
+	customer oc_customer%ROWTYPE;
+BEGIN
+	SELECT * INTO customer FROM oc_customer where city = 'KUDUS';
+	IF  SQL%FOUND THEN
+		total_rows := sql%rowcount;
+		dbms_output.put_line('FOUND : ' || total_rows || ' records');
+	ELSIF SQL%NOTFOUND  THEN
+		dbms_output.put_line('No record found!');
+	END IF;
+END;
+/
+
+
+
+FOR index IN <cursor name>
+LOOP
+	dbms_output ...........
+	EXIT WHEN .........
+END LOOP;
+
+
+DECLARE
+	customer_name customers.CUSTOMER_NAME%TYPE;
+BEGIN
+	SELECT CUSTOMER_NAME INTO customer_name FROM customers where CUSTOMER_ID = 1;
+	dbms_output.put_line(customer_name);
+END;
+/
+
+
+
+DECLARE
+	customer customers%ROWTYPE;
+BEGIN
+	SELECT * INTO customer FROM customers WHERE SUBSTR(CUSTOMER_NAME,1,2) LIKE 'Ya%';
+	IF SQL%FOUND THEN
+		dbms_output.put_line(customer.CUSTOMER_ID || customer.CUSTOMER_NAME || customer.CITY);
+	ELSIF SQL%NOTFOUND THEN
+		dbms_output.put_line('no data found!');
+	END IF;
+END;
+/
+
+
+
+4) LOOPING 
+
+DECLARE
+
+BEGIN
+	FOR customer IN ( SELECT * FROM customers)
+	LOOP
+		dbms_output.put_line(customer.CUSTOMER_ID || ' ' || customer.CUSTOMER_NAME);
+	END LOOP;
+END;
+/
+
+DECLARE
+	CURSOR c_customer IS SELECT * FROM customers;
+BEGIN
+	FOR cust IN c_customer
+	LOOP
+		dbms_output.put_line(cust.CUSTOMER_ID || ' ' || cust.CITY);
+	END LOOP;
+END;
+/
+
+
+
+ DECLARE
+  2     CURSOR c_customer IS SELECT * FROM customers;
+  3     name varchar2(100);
+  4  BEGIN
+  5     FOR x IN c_customer
+  6     LOOP
+  7             name := x.CUSTOMER_NAME || ' ' || x.CITY;
+  8             dbms_output.put_line(name);
+  9     END LOOP;
+ 10  END;
+ 11  /
+
+Yasugi Yuli Maryani Jakarta
+Alonzo Jethro Bekasi
+
+PL/SQL procedure successfully completed.
+
+
+
+5) PROCEDURE
+CREATE [OR REPLACE ] PROCEDURE procedure_name (parameter_list)
+IS
+	[declaration statements]
+BEGIN
+	[execution statements]
+	EXCEPTION
+		[exception handler]
+END procedure_name;
+
+
+IN -> reference parameter (read only)
+OUT -> return value
+INOUT -> read & return value
+
+EXAMPLE:
+
+
+DECLARE
+	a number;
+PROCEDURE plusvalue (x IN OUT number) IS
+	BEGIN
+		x := x * x;
+	END plusvalue;
+BEGIN
+	a := 23;
+	plusvalue(a);
+	dbms_output.put_line('result : ' || a);
+END;
+/
+
+
+DECLARE
+	a number;
+	b number;
+	c number;
+PROCEDURE min_val (x IN number, y IN number, z OUT number) IS
+BEGIN
+	IF x < y THEN
+		z := x;
+	ELSE
+		Z := y;
+	END IF;
+END min_val;
+BEGIN
+	a := 23;
+	b := 49;
+	min_val(a,b,c);
+	dbms_output.put_line('The smallest value of 23 < 49 is ' || c);
+END;
+/ 
+
+
+
+6) Function
+
+CREATE [OR REPLACE] FUNCTION function name[(
+parameter_1 [IN][OUT] data_type,
+parameter_2 [IN][OUT] data_type,
+parameter_3 [IN][OUT] data_type
+)]
+RETURN return_data_type IS
+BEGIN
+	return return_data_type;
+	EXCEPTION
+END;
+/
+
+
+CREATE FUNCTION try_parse(iv_number varchar2)
+RETURN NUMBER IS
+BEGIN
+	RETURN to_number(iv_number);
+	EXCEPTION
+	WHEN others THEN
+	RETURN NULL;
+END;
+
+DECLARE
+
+	n_x number;
+	n_y number;
+	n_z number;
+BEGIN
+	n_x := try_parse('574');
+	n_y := try_parse('12.12');
+	n_z := try_parse('abcd');
+
+	dbms_output.put_line(n_x);
+	dbms_output.put_line(n_y);
+	dbms_output.put_line(n_z);
+END;
+/
+
+CREATE FUNCTION province(city IN VARCHAR2) RETURN VARCHAR2 AS
+BEGIN
+	IF city= 'KUDUS' THEN
+		RETURN 'JAWA TENGAH';
+	ELSE
+		RETURN 'LUAR JAWA TENGAH';
+	END IF;
+END;
+/
+
+DECLARE
+	CURSOR c_customer IS SELECT * FROM customers;
+	prov VARCHAR2(150);
+BEGIN
+	FOR cust IN c_customer
+	LOOP
+		prov := province(cust.CITY);
+		dbms_output.put_line(cust.CUSTOMER_ID || cust.CUSTOMER_NAME || prov);
+	END LOOP;
+END;
+/
+
+CREATE FUNCTION fuction_name (parameter 1, parameter2) RETURN return_data_type IS/AS
+BEGIN
+	SFDFDSFS 
+END;
+		
+
+7) DML
+	
+DECLARE
+	CURSOR c_customer IS SELECT * FROM customers;
+BEGIN
+	FOR i IN c_customer
+	LOOP
+		INSERT INTO salary (CUSTOMER_ID,basic_salary) VALUES (i.CUSTOMER_ID,3500000);
+	END LOOP;
+END;
+/
+
+CREATE FUNCTION count_bonus (gaji IN NUMBER) RETURN NUMBER IS
+BEGIN
+	RETURN (gaji*0.10);
+END;
+	
+DECLARE
+	CURSOR c_cust IS SELECT * FROM salary;
+	bns number(11);
+BEGIN
+	FOR i IN c_cust
+	LOOP
+		bns := count_bonus(i.basic_salary);
+		UPDATE salary SET bonus = bns WHERE CUSTOMER_ID = i.CUSTOMER_ID;
+	END LOOP;
+END;
+/
+
+** JOIN ***
+
+select a.customer_id,b.customer_id from customers a left outer join salary b on a.customer_id=b.customer_id;
+
+INNER JOIN == JOIN
+LEFT OUTER JOIN == LEFT JOIN
+RIGHT OUTER JOIN == RIGHT JOIN
+FULL OUTER JOIN = FULL JOIN
+
+
+8)CASE
+  CASE <case_operand>
+	WHEN <when_operand> THEN {statement};
+	WHEN <when_operand> THEN {statement};
+	.....
+	ELSE {statement};
+  END CASE;
+DECLARE
+	CURSOR cust IS SELECT * FROM salary;
+	staff VARCHAR2(10);
+BEGIN
+	FOR c IN cust
+	LOOP
+	 	CASE
+			WHEN c.customer_id = 1 THEN 
+			staff := 'Cumpret';
+		ELSE
+			staff := 'Olala';
+		END CASE;
+		dbms_output.put_line(c.customer_id || staff);
+	END LOOP;
+END;
+/
+
+
+			
+
+	
+	
+
+
+
+
